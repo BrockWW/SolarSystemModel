@@ -1,0 +1,61 @@
+'''Creating planet and solar system class to initialize al objects wanting to be modeled'''
+
+import numpy as np
+    
+class Solar_System():
+    def __init__(self, objects, t_0, t_f, delta_t):
+        
+        self.G = 6.67430e-11
+
+        self.objects = objects
+        
+        self.delta_t = delta_t
+
+        self.initialize(t_0, t_f)
+        
+    def initialize(self, t_0, t_f):
+        self.n = int(np.ceil((t_f-t_0)/self.delta_t))
+        self.t = np.zeros(self.n)
+        self.r_arrays = {}
+        self.v_arrays = {}
+        
+        for object in self.objects:
+            self.r_arrays["{0}".format(object.name)] = np.zeros((self.n,3))
+            self.v_arrays["{0}".format(object.name)] = np.zeros((self.n,3))
+     
+            self.r_arrays["{0}".format(object.name)][0] = object.r_0
+            self.v_arrays["{0}".format(object.name)][0] = object.v_0
+                    
+    def Velocity_Verlet(self):
+        for j in range(self.n-1):
+            self.acceleration_orbit(j = j)
+            self.velocity(j = j)
+            self.t[j+1] = self.t[j] + self.delta_t
+
+    def acceleration_orbit(self, j):
+        for key in self.r_arrays.keys():
+            a = 0
+            for o in self.objects:
+                call = o.name
+                if call != key:
+                    r_diff = self.r_arrays[key][j] - self.r_arrays[call][j]
+                    rmag = np.linalg.norm(r_diff)
+                    a += ((-self.G*o.mass*r_diff)/(rmag**3))
+            
+            self.r_arrays[key][j+1] = self.r_arrays[key][j] + self.delta_t*self.v_arrays[key][j] + 0.5*(self.delta_t**2)*a
+                        
+    def velocity(self, j):
+        for key in self.r_arrays.keys():
+            a = 0
+            for o in self.objects:
+                call = o.name
+                if call != key:
+                    r_diff0 = self.r_arrays[key][j]-self.r_arrays[call][j]
+                    rmag0 = np.linalg.norm(r_diff0)
+                    a += ((-self.G*o.mass*r_diff0)/(rmag0**3))
+
+                    r_diff1 = self.r_arrays[key][j+1]-self.r_arrays[call][j+1]
+                    rmag1 = np.linalg.norm(r_diff1)
+                    a += ((-self.G*o.mass*r_diff1)/(rmag1**3))
+
+            self.v_arrays[key][j+1] = self.v_arrays[key][j] + 0.5*self.delta_t*a
