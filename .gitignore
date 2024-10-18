@@ -1,4 +1,4 @@
-object_data/
-.vs/
-__pycache__/
+object_data
+.vs
+__pycache__
 !.gitignore
