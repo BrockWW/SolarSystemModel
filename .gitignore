@@ -1,3 +1,4 @@
 object_data/
 .vs/
 __pycache__/
+!.gitignore
